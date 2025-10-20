@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "com.seanba.super-tiled2unity": {
-      "version": "file:D:/Documents/SOFTWARE/Unity Plugins/SuperTiled2Unity-master/SuperTiled2Unity/Packages/com.seanba.super-tiled2unity",
+      "version": "file:../com.seanba.super-tiled2unity",
       "depth": 0,
       "source": "local",
       "dependencies": {
