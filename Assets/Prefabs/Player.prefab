@@ -389,21 +389,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerState
   groundCheckDistance: 0.05
   castFilter:
-    useTriggers: 0
-    useLayerMask: 0
-    useDepth: 0
-    useOutsideDepth: 0
-    useNormalAngle: 0
-    useOutsideNormalAngle: 0
-    layerMask:
-      serializedVersion: 2
-      m_Bits: 4294967295
-    minDepth: 0
-    maxDepth: 0
-    minNormalAngle: 0
-    maxNormalAngle: 0
-  initialCharacterCanMove: 1
-  CharacterCanMove: 0
+    serializedVersion: 2
+    m_Bits: 1
+  CharacterCanMove: 1
+  onTouchGround:
+    m_PersistentCalls:
+      m_Calls: []
+  onLeaveGround:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &7432482621742424127
 MonoBehaviour:
   m_ObjectHideFlags: 0

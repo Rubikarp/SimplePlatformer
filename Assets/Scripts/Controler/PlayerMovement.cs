@@ -1,5 +1,6 @@
 using UnityEngine.InputSystem;
 using UnityEngine;
+using System;
 
 // Définition une liste d'état possible (marche, course, ou dans les airs)
 public enum MovementState
@@ -30,22 +31,34 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float desiredvelocityX;
 
     [Header("Input Stick")]
-    [SerializeField] private bool isMoving;
     [SerializeField] private float horizontalInput;
 
     [Header("Input Sprint")]
-    [SerializeField] private bool isToggleSprint;
-    [SerializeField] private bool wantToSprint;
+    [SerializeField] private bool isPressingSprint;
+    [SerializeField] private bool isSprintTooglable;
 
     private void Awake()
     {
         // Recherche du Rigidbody2D sur l'objet (sert à appliquer la physique : vitesse, gravité...)
         body = GetComponent<Rigidbody2D>();
+        playerInfo.onLeaveGround.AddListener(OnLeaveGround);
+        playerInfo.onTouchGround.AddListener(OnTouchGround);
     }
+
+    private void OnLeaveGround()
+    {
+        currentState = MovementState.Aerial;
+    }
+    private void OnTouchGround()
+    {
+        if (isPressingSprint)
+            currentState = MovementState.Running;
+        else
+            currentState = MovementState.Walking;
+    }
+
     private void Update()
     {
-        // Rafraîchit l'état actuel du joueur (marche, course...)
-        CheckCurrentState();
         // Gère l'orientation du personnage (droite/gauche)
         UpdateLookDirection();
     }
@@ -60,58 +73,43 @@ public class PlayerMovement : MonoBehaviour
         if (!playerInfo.CharacterCanMove)
         {
             horizontalInput = 0;
-            velocityX = 0;
             return;
         }
 
         horizontalInput = context.ReadValue<Vector2>().x;
-        isMoving = horizontalInput != 0;
     }
     public void OnSprint(InputAction.CallbackContext context)
     {
-        if (isToggleSprint)
+        if (isSprintTooglable)
         {
-            if (context.started) wantToSprint = !wantToSprint;
+            if (context.started) isPressingSprint = !isPressingSprint;
         }
         else
         {
-            if (context.started) wantToSprint = true;
-            if (context.canceled) wantToSprint = false;
+            if (context.started) isPressingSprint = true;
+            if (context.canceled) isPressingSprint = false;
+        }
+
+        if (isPressingSprint && currentState == MovementState.Walking)
+        {
+            currentState = MovementState.Running;
         }
     }
 
-    private void CheckCurrentState()
+    private void UpdateLookDirection()
     {
-        if (playerInfo.IsGrounded)
+        //Si le joueur ne touche pas au stick on fait rien
+        if (horizontalInput == 0) return;
+
+        if (horizontalInput < 0)
         {
-            if (wantToSprint)
-            {
-                currentState = MovementState.Running;
-            }
-            else
-            {
-                currentState = MovementState.Walking;
-            }
+            // On regarde à gauche : on retourne le joueur sur l'axe x
+            transform.localScale = new Vector3(-1, 1, 1);
         }
         else
         {
-            currentState = MovementState.Aerial;
-        }
-    }
-    private void UpdateLookDirection()
-    {
-        if (isMoving)
-        {
-            if (horizontalInput < 0)
-            {
-                // On regarde à gauche : on retourne le sprite horizontalement
-                transform.localScale = new Vector3(-1, 1, 1);
-            }
-            else
-            {
-                // On regarde à droite : sprite normal
-                transform.localScale = new Vector3(1, 1, 1);
-            }
+            // On regarde à droite : on retablit le joueur sur l'axe x
+            transform.localScale = new Vector3(1, 1, 1);
         }
     }
     private void ComputeVelocity()
@@ -125,7 +123,12 @@ public class PlayerMovement : MonoBehaviour
         };
 
         float maxSpeedChange = float.MaxValue;
-        if (isMoving)
+        if (horizontalInput == 0)
+        {
+            // Quand le joueur relâche le stick, on freine
+            maxSpeedChange = moveSettings.maxDecceleration * Time.deltaTime;
+        }
+        else
         {
             // Vérifie si le joueur change de direction par rapport à sa vitesse actuelle
             bool IsChangingMoveDirection = Mathf.Sign(transform.localScale.x) != Mathf.Sign(body.linearVelocity.x);
@@ -140,11 +143,6 @@ public class PlayerMovement : MonoBehaviour
                 // Accélération normale
                 maxSpeedChange = moveSettings.maxAcceleration * Time.deltaTime;
             }
-        }
-        else
-        {
-            // Quand le joueur relâche toute touche, on freine (décélération)
-            maxSpeedChange = moveSettings.maxDecceleration * Time.deltaTime;
         }
 
         desiredvelocityX = horizontalInput * moveSettings.maxSpeed;

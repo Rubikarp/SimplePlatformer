@@ -1,45 +1,67 @@
 using System.Collections.Generic;
+using UnityEngine.Events;
 using UnityEngine;
 
-// Uses the collider to check directions to see if the object is currently on the ground, touching the wall, or touching the ceiling
+//Special kind of "if" to not take in account the code in not inside the editor
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 [RequireComponent(typeof(CapsuleCollider2D))]
 public class PlayerState : MonoBehaviour
 {
-    private CapsuleCollider2D col;
-
     [Header("Collider Settings")]
-    [SerializeField, Tooltip("Length of the ground-checking collider")] 
-    private float groundCheckDistance = 0.05f;
+    [SerializeField, Range(0F, .2f)] private float groundCheckDistance = 0.05f;
 
     [Header("Layer Masks")]
-    [SerializeField, Tooltip("Which layers are read as the ground")] 
-    public ContactFilter2D castFilter;
+    [SerializeField] private ContactFilter2D castFilter = new ContactFilter2D();
+    [SerializeField] private List<RaycastHit2D> groundCastResult = new List<RaycastHit2D>(8);
 
     [Header("Info")]
-    [SerializeField] private bool initialCharacterCanMove = true;
     public bool CharacterCanMove;
-    public bool IsGrounded { get; private set; }
-    [SerializeField] private List<RaycastHit2D> groundCastResult = new List<RaycastHit2D>();
+    private CapsuleCollider2D capsule;
+    public bool IsGrounded
+    {
+        get => _isGrounded;
+        private set
+        {
+            //Check if value change
+            if (_isGrounded == value) return;
+
+            _isGrounded = value;
+            if (_isGrounded)
+                onTouchGround?.Invoke();
+            else
+                onLeaveGround?.Invoke();
+        }
+    }
+    private bool _isGrounded;
+
+    [Header("Events")]
+    public UnityEvent onTouchGround;
+    public UnityEvent onLeaveGround;
 
     private void Awake()
     {
-        col = GetComponent<CapsuleCollider2D>();
-        CharacterCanMove = initialCharacterCanMove;
+        // Recherche du CapsuleCollider2D sur l'objet
+        capsule = GetComponent<CapsuleCollider2D>();
     }
     private void FixedUpdate()
     {
-        IsGrounded = col.Cast(Vector2.down, castFilter, groundCastResult, groundCheckDistance) > 0;
+        capsule.Cast(Vector2.down, castFilter, groundCastResult, groundCheckDistance);
+        IsGrounded = groundCastResult.Count > 0;
     }
-
     private void OnDrawGizmos()
     {
-        if (col == null) col = GetComponent<CapsuleCollider2D>();
+        if (capsule == null) capsule = GetComponent<CapsuleCollider2D>();
 
-        var originalColor = Gizmos.color;
-        Gizmos.color = IsGrounded ? Color.green : Color.red;
-
-        Gizmos.DrawWireCube(col.bounds.center + Vector3.down * groundCheckDistance, col.bounds.size);
-
-        Gizmos.color = originalColor;
+//Special kind of "if" to not take in account the code in not inside the editor
+#if UNITY_EDITOR
+        Color color = IsGrounded? Color.green : Color.red;
+        using (new Handles.DrawingScope(color))
+        {
+            Handles.DrawWireCube(capsule.bounds.center + Vector3.down * groundCheckDistance, capsule.bounds.size);
+        }
+#endif
     }
 }
