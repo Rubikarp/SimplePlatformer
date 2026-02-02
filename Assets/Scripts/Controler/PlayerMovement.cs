@@ -15,7 +15,7 @@ public enum MovementState
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Components")]
-    [SerializeField] private PlayerState playerInfo;
+    [SerializeField] private PlayerEnvironnementContact playerInfo;
     private Rigidbody2D body;
 
     [Header("Current State")]
@@ -94,6 +94,11 @@ public class PlayerMovement : MonoBehaviour
         {
             currentState = MovementState.Running;
         }
+    }
+    public void ResetControl()
+    {
+        velocityX = 0;
+        desiredvelocityX = 0;
     }
 
     private void UpdateLookDirection()

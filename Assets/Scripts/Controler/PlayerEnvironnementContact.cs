@@ -8,7 +8,7 @@ using UnityEditor;
 #endif
 
 [RequireComponent(typeof(CapsuleCollider2D))]
-public class PlayerState : MonoBehaviour
+public class PlayerEnvironnementContact : MonoBehaviour
 {
     [Header("Collider Settings")]
     [SerializeField, Range(0F, .2f)] private float groundCheckDistance = 0.05f;

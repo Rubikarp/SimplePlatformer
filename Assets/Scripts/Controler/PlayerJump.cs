@@ -14,7 +14,7 @@ public enum JumpState
 public class PlayerJump : MonoBehaviour
 {
     [Header("Components")]
-    [SerializeField] private PlayerState playerInfo;
+    [SerializeField] private PlayerEnvironnementContact playerInfo;
     private Rigidbody2D body;
 
     [Header("Current State")]
@@ -36,11 +36,6 @@ public class PlayerJump : MonoBehaviour
     [Space]
     [SerializeField, Range(1f, 10f)]
     private float maxFallSpeed = 12f;
-
-    [Header("Options Analogic")]
-    public bool isJumpAnalogic = false;
-    [SerializeField, Range(1f, 10f)]
-    private float jumpCutOffGravityMultiplier = 1.75f;
 
     [Header("Options Coyotee Time")]
     public bool useCoyoteeTime = false;
@@ -72,7 +67,6 @@ public class PlayerJump : MonoBehaviour
         playerInfo.onLeaveGround.AddListener(OnLeaveGround);
         playerInfo.onTouchGround.AddListener(OnTouchGround);
     }
-
     private void FixedUpdate()
     {
         if (currentState == JumpState.Jumping && body.linearVelocity.y < 0) currentState = JumpState.Falling;
@@ -80,19 +74,19 @@ public class PlayerJump : MonoBehaviour
         var newGravityScale = GetGravityConstant();
         newGravityScale *= currentState switch
         {
-            JumpState.Jumping => (isJumpAnalogic && !isPressingJump) ? jumpGravityMultiplier * jumpCutOffGravityMultiplier : jumpGravityMultiplier,
+            JumpState.Jumping => jumpGravityMultiplier,
             JumpState.Falling => fallGravityMultiplier,
             JumpState.Grounded => groundGravityMultiplier,
             _ => groundGravityMultiplier,
         };
-        //Gravité = Physics2D.gravity.y * gravityScale = gravityForce
-        //Gravité = gravityForce / Physics2D.gravity.y
-        //Et comme Physics2D.gravity.y est négatif, on l'inverse en mettant un - devant
+        //Gravitï¿½ = Physics2D.gravity.y * gravityScale = gravityForce
+        //Gravitï¿½ = gravityForce / Physics2D.gravity.y
+        //Et comme Physics2D.gravity.y est nï¿½gatif, on l'inverse en mettant un - devant
         newGravityScale /= -Physics2D.gravity.y;
         currentGravityMultiplier = newGravityScale;
         body.gravityScale = currentGravityMultiplier;
 
-        //Limite la velocité terminal (la vitesse de chute maximum)
+        //Limite la velocitï¿½ terminal (la vitesse de chute maximum)
         body.linearVelocityY = Mathf.Max(body.linearVelocityY, -maxFallSpeed);
     }
 
@@ -101,6 +95,10 @@ public class PlayerJump : MonoBehaviour
         if (!playerInfo.CharacterCanMove) return;
 
         if (context.started) TryToJump();
+    }
+    public void ResetControl()
+    {
+
     }
 
     private void OnTouchGround()
@@ -159,8 +157,8 @@ public class PlayerJump : MonoBehaviour
     private float GetGravityConstant()
     {
         //Formule de physique :
-        //Hauteur = (1/2) * Gravité * Temps²
-        //Donc Gravité = (2 * Hauteur) / Temps²
+        //Hauteur = (1/2) * Gravitï¿½ * Tempsï¿½
+        //Donc Gravitï¿½ = (2 * Hauteur) / Tempsï¿½
         return (2f * jumpHeight) / Mathf.Pow(timeToReachApex, 2f);
     }
 

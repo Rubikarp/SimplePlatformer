@@ -166,6 +166,9 @@ GameObject:
   - component: {fileID: 4162336370277203831}
   - component: {fileID: 7432482621742424127}
   - component: {fileID: 7055270132839523715}
+  - component: {fileID: 2640771832331221346}
+  - component: {fileID: 4176750537079482493}
+  - component: {fileID: 7285381976041683750}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -181,7 +184,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2941697237197626173}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.08, y: 0.32, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -389,8 +392,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerState
   groundCheckDistance: 0.05
   castFilter:
-    serializedVersion: 2
-    m_Bits: 1
+    useTriggers: 0
+    useLayerMask: 0
+    useDepth: 0
+    useOutsideDepth: 0
+    useNormalAngle: 0
+    useOutsideNormalAngle: 0
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 0
+    minDepth: 0
+    maxDepth: 0
+    minNormalAngle: 0
+    maxNormalAngle: 0
   CharacterCanMove: 1
   onTouchGround:
     m_PersistentCalls:
@@ -429,10 +443,9 @@ MonoBehaviour:
     maxTurnSpeed: 80
   velocityX: 0
   desiredvelocityX: 0
-  isMoving: 0
   horizontalInput: 0
-  isToggleSprint: 0
-  wantToSprint: 0
+  isPressingSprint: 0
+  isSprintTooglable: 0
 --- !u!114 &7055270132839523715
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -447,21 +460,104 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerJump
   playerInfo: {fileID: 4162336370277203831}
   currentState: 0
-  jumpHeight: 3
+  jumpHeight: 2.75
   timeToReachApex: 0.42
   groundGravityMultiplier: 1
   jumpGravityMultiplier: 0.95
   fallGravityMultiplier: 1.9
   maxFallSpeed: 10
-  isJumpAnalogic: 1
+  isJumpAnalogic: 0
   jumpCutOffGravityMultiplier: 2
-  desiredJump: 0
-  pressingJump: 0
-  initialJumpForce: 0
-  currentGravityMultiplier: 0
+  useCoyoteeTime: 1
+  coyoteeTimeWindow: 0.2
+  useJumpBuffer: 1
+  jumpBufferTimeWindow: 0.2
   onJump:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2640771832331221346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2941697237197626173}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60e191f9d42e79f46bc39f8125e20b6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerKnocback
+  jumpAbility: {fileID: 7055270132839523715}
+  moveAbility: {fileID: 7432482621742424127}
+  duration: 0.66
+--- !u!114 &4176750537079482493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2941697237197626173}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4b724cee3095b34f948a59b3186c9ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerRespawn
+  defaultRespawnPos: {x: 0, y: 0, z: 0}
+  lastCheckPoint: {fileID: 0}
+  playerRigidbody: {fileID: 7942284505668122404}
+  playerHealth: {fileID: 7285381976041683750}
+  playerKnocback: {fileID: 2640771832331221346}
+  playerJump: {fileID: 7055270132839523715}
+  playerMovement: {fileID: 7432482621742424127}
+--- !u!114 &7285381976041683750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2941697237197626173}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21cbcaa18c5adf14c91deb01e24e632a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SimpleHealth
+  _maxHealth: 5
+  _currentHealth: 5
+  _onHealthChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  _onDeath:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4176750537079482493}
+        m_TargetAssemblyTypeName: PlayerRespawn, Assembly-CSharp
+        m_MethodName: RespawnIn
+        m_Mode: 4
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 2
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnKnockback:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2640771832331221346}
+        m_TargetAssemblyTypeName: PlayerKnocback, Assembly-CSharp
+        m_MethodName: KnockBackPlayer
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  _isInvulnerable: 0
+  invincibilityDuration: 1
 --- !u!1 &7126843203925298969
 GameObject:
   m_ObjectHideFlags: 0
